@@ -4,6 +4,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.net.Uri
 import com.example.discord_alert_system.R
 
 /**
@@ -23,7 +24,7 @@ class AudioAlertController(private val context: Context) {
     private var savedRingerMode: Int = AudioManager.RINGER_MODE_NORMAL
     private var savedAlarmVolume: Int = 0
 
-    fun play() {
+    fun play(customSoundUri: String? = null) {
         savedRingerMode = audioManager.ringerMode
         savedAlarmVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
 
@@ -41,9 +42,13 @@ class AudioAlertController(private val context: Context) {
         }
 
         mediaPlayer = MediaPlayer().apply {
-            val afd = context.resources.openRawResourceFd(R.raw.alarm)
-            setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-            afd.close()
+            if (customSoundUri != null) {
+                setDataSource(context, Uri.parse(customSoundUri))
+            } else {
+                val afd = context.resources.openRawResourceFd(R.raw.alarm)
+                setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                afd.close()
+            }
             setAudioStreamType(AudioManager.STREAM_ALARM)
             isLooping = true
             prepare()

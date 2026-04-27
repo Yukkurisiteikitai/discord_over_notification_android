@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
     val settings by viewModel.settings.collectAsState()
+    val isTestPlaying by viewModel.isTestPlaying.collectAsState()
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Settings") }) },
@@ -66,8 +67,15 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
             AlertSection(
                 strobeIntervalMs = settings.strobeIntervalMs,
                 alertDurationMs = settings.alertDurationMs,
+                uploadedSounds = settings.uploadedSounds,
+                selectedSoundUri = settings.selectedSoundUri,
+                isTestPlaying = isTestPlaying,
                 onStrobeIntervalChange = viewModel::updateStrobeInterval,
                 onAlertDurationChange = viewModel::updateAlertDuration,
+                onSoundAdded = viewModel::addUploadedSound,
+                onSoundRemoved = viewModel::removeUploadedSound,
+                onSoundSelected = viewModel::selectSound,
+                onTestSoundToggle = viewModel::toggleTestSound,
                 modifier = Modifier.padding(vertical = 12.dp),
             )
 

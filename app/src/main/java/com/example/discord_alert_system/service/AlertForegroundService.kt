@@ -38,6 +38,7 @@ class AlertForegroundService : Service() {
     companion object {
         const val EXTRA_DURATION = "duration"
         const val EXTRA_STROBE_INTERVAL = "strobe_interval"
+        const val EXTRA_CUSTOM_SOUND_URI = "custom_sound_uri"
         const val ACTION_STOP = "com.example.discord_alert_system.action.STOP_ALERT"
         private const val CHANNEL_ID = "discord_alert_channel"
         private const val NOTIFICATION_ID = 1001
@@ -69,6 +70,7 @@ class AlertForegroundService : Service() {
 
         val durationMs = intent?.getLongExtra(EXTRA_DURATION, 30_000L) ?: 30_000L
         val strobeIntervalMs = intent?.getLongExtra(EXTRA_STROBE_INTERVAL, 250L) ?: 250L
+        val customSoundUri = intent?.getStringExtra(EXTRA_CUSTOM_SOUND_URI)
 
         startForeground(NOTIFICATION_ID, buildNotification())
         AlertState.setActive(true)
@@ -77,7 +79,7 @@ class AlertForegroundService : Service() {
         alertJob = scope.launch {
             try {
                 val strobeJob = launch { flashlight.strobe(strobeIntervalMs, durationMs) }
-                audio.play()
+                audio.play(customSoundUri)
                 strobeJob.join()
             } finally {
                 // キャンセル・正常終了どちらでも必ず通る

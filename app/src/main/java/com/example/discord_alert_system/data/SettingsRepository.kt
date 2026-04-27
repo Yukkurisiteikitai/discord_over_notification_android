@@ -24,6 +24,9 @@ class SettingsRepository(private val context: Context) {
         private val KEY_QUIET_HOURS_ENABLED = booleanPreferencesKey("quiet_hours_enabled")
         private val KEY_QUIET_HOURS_START = stringPreferencesKey("quiet_hours_start")
         private val KEY_QUIET_HOURS_END = stringPreferencesKey("quiet_hours_end")
+        // Stored as Set<"uri\tname">
+        private val KEY_UPLOADED_SOUNDS = stringSetPreferencesKey("uploaded_sounds")
+        private val KEY_SELECTED_SOUND_URI = stringPreferencesKey("selected_sound_uri")
     }
 
     val settingsFlow: Flow<SettingsState> = context.dataStore.data.map { prefs ->
@@ -35,6 +38,12 @@ class SettingsRepository(private val context: Context) {
             quietHoursEnabled = prefs[KEY_QUIET_HOURS_ENABLED] ?: false,
             quietHoursStart = prefs[KEY_QUIET_HOURS_START] ?: "22:00",
             quietHoursEnd = prefs[KEY_QUIET_HOURS_END] ?: "07:00",
+            uploadedSounds = prefs[KEY_UPLOADED_SOUNDS]?.mapNotNull { encoded ->
+                val idx = encoded.indexOf('\t')
+                if (idx > 0) SoundOption(encoded.substring(0, idx), encoded.substring(idx + 1))
+                else null
+            } ?: emptyList(),
+            selectedSoundUri = prefs[KEY_SELECTED_SOUND_URI],
         )
     }
 
@@ -59,6 +68,28 @@ class SettingsRepository(private val context: Context) {
             it[KEY_QUIET_HOURS_ENABLED] = enabled
             it[KEY_QUIET_HOURS_START] = start
             it[KEY_QUIET_HOURS_END] = end
+        }
+    }
+
+    suspend fun addUploadedSound(sound: SoundOption) {
+        context.dataStore.edit { prefs ->
+            val current = prefs[KEY_UPLOADED_SOUNDS] ?: emptySet()
+            prefs[KEY_UPLOADED_SOUNDS] = current + "${sound.uri}\t${sound.name}"
+        }
+    }
+
+    suspend fun removeUploadedSound(uri: String) {
+        context.dataStore.edit { prefs ->
+            val current = prefs[KEY_UPLOADED_SOUNDS] ?: emptySet()
+            prefs[KEY_UPLOADED_SOUNDS] = current.filterNot { it.startsWith("$uri\t") }.toSet()
+            if (prefs[KEY_SELECTED_SOUND_URI] == uri) prefs.remove(KEY_SELECTED_SOUND_URI)
+        }
+    }
+
+    suspend fun selectSound(uri: String?) {
+        context.dataStore.edit { prefs ->
+            if (uri != null) prefs[KEY_SELECTED_SOUND_URI] = uri
+            else prefs.remove(KEY_SELECTED_SOUND_URI)
         }
     }
 }

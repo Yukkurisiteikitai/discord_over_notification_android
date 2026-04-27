@@ -38,6 +38,7 @@ object AlertOrchestrator {
         val intent = Intent(context, AlertForegroundService::class.java).apply {
             putExtra(AlertForegroundService.EXTRA_DURATION, settings.alertDurationMs)
             putExtra(AlertForegroundService.EXTRA_STROBE_INTERVAL, settings.strobeIntervalMs)
+            settings.selectedSoundUri?.let { putExtra(AlertForegroundService.EXTRA_CUSTOM_SOUND_URI, it) }
         }
         context.startForegroundService(intent)
     }

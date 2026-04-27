@@ -4,6 +4,8 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
+data class SoundOption(val uri: String, val name: String)
+
 data class SettingsState(
     val keywords: List<String> = emptyList(),
     val senders: List<String> = emptyList(),
@@ -14,6 +16,9 @@ data class SettingsState(
     val quietHoursEnabled: Boolean = false,
     val quietHoursStart: String = "22:00",
     val quietHoursEnd: String = "07:00",
+    // User-uploaded sounds. null selectedSoundUri = bundled alarm.mp3.
+    val uploadedSounds: List<SoundOption> = emptyList(),
+    val selectedSoundUri: String? = null,
     // recastMs == alertDurationMs: same sender+keyword combo is silenced
     // for the entire alert window to prevent re-triggering.
 ) {
